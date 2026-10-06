@@ -1,0 +1,41 @@
+name: Windows build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        shell: pwsh
+        run: .\build.ps1 -OutputDirectory build\ci
+
+      - name: Offline checks
+        shell: pwsh
+        run: |
+          $tests = @(
+            @('--self-test', '.\build\ci-self-test'),
+            @('--verify-update', '.\build\ci-update-check'),
+            @('--verify-pet-render', '.\build\ci-pet-render')
+          )
+          foreach ($test in $tests) {
+            $process = Start-Process .\build\ci\WeTypeSkinStudio.exe -ArgumentList $test -Wait -NoNewWindow -PassThru
+            if ($process.ExitCode -ne 0) { throw "离线检查失败：$($test[0])，退出码 $($process.ExitCode)" }
+          }
+
+      - name: Package
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/p/?LinkId=2124701' -OutFile build\WebView2OfflineSetup.exe
+          .\package-installer.ps1 -WebView2Installer build\WebView2OfflineSetup.exe
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: WeTypeSkinStudio-win-x64
+          path: Release/WeTypeSkinStudio-Windows-x64.exe

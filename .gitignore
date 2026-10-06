@@ -1,0 +1,13 @@
+dist/
+build/
+Release/
+artifacts/
+WeTypeSkinStudio-win-x64/
+WeTypeSkinStudio-win-x64.zip
+research/
+demo/
+*.user
+*.suo
+*.pdb
+*.tmp
+*.log

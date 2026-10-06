@@ -1,0 +1,20 @@
+name: macOS editor build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and package host architecture
+        run: bash macos/package.sh
+      - name: Offline skin checks
+        run: bash macos/check.sh
+      - name: Upload editor package
+        uses: actions/upload-artifact@v4
+        with:
+          name: WeTypeSkinStudio-macos-editor
+          path: build/macos-*/WeTypeSkinStudio-macos-*.dmg

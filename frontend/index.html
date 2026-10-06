@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://studio.wetype.local; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>微信输入法皮肤工作室</title>
+  <link rel="stylesheet" href="studio.css">
+  <script defer src="lucide.min.js"></script>
+  <script defer src="studio.js"></script>
+</head>
+<body>
+  <div id="operation-overlay" class="operation-overlay" hidden aria-hidden="true">
+    <div class="operation-backdrop"></div>
+    <section class="operation-card" role="dialog" aria-modal="true" aria-labelledby="operation-title" aria-describedby="operation-message">
+      <div class="operation-head">
+        <div class="operation-kicker"><span class="operation-orb"><i id="operation-icon" data-lucide="sparkles"></i></span><span id="operation-kicker-text">原生操作</span></div>
+        <span id="operation-count" class="operation-count">01 / 05</span>
+      </div>
+      <div class="operation-title-row"><div><h2 id="operation-title">应用皮肤</h2><p id="operation-message" aria-live="polite">正在准备皮肤文件</p></div><span id="operation-percent" class="operation-percent">8%</span></div>
+      <div id="operation-steps" class="operation-steps">
+        <div class="operation-step" data-step="1"><span class="step-index">01</span><span><b>准备皮肤</b><small>检查颜色、图片与构图</small></span></div>
+        <div class="operation-step" data-step="2"><span class="step-index">02</span><span><b>等待授权</b><small>请求 Windows 管理员权限</small></span></div>
+        <div class="operation-step" data-step="3"><span class="step-index">03</span><span><b>写入原生文件</b><small>安全停止输入法并提交变更</small></span></div>
+        <div class="operation-step" data-step="4"><span class="step-index">04</span><span><b>重启输入法</b><small>恢复官方 IPC 输入链路</small></span></div>
+        <div class="operation-step" data-step="5"><span class="step-index">05</span><span><b>验证候选框</b><small>确认输入连接和原生窗口</small></span></div>
+      </div>
+      <div class="operation-progress"><span id="operation-fill"></span></div>
+      <div class="operation-foot"><span id="operation-state">正在处理，请稍候</span><span class="operation-lock"><i data-lucide="lock-keyhole"></i>编辑器已锁定</span></div>
+    </section>
+  </div>
+  <header class="appbar">
+    <div class="brand"><span class="brand-mark"><i data-lucide="panels-top-left"></i></span><h1>皮肤工作室</h1><span class="version">0.3</span></div>
+    <div class="file-actions">
+      <button id="project-github" class="icon-button" title="GitHub · 源码与反馈" aria-label="打开 GitHub 仓库"><i data-lucide="github"></i></button>
+      <button id="project-x" class="icon-button" title="X · Tokupup" aria-label="打开 X 主页"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3l-5-7.6L5.3 22H2.1l8.3-9.6L.8 2h6.5l4.5 6.9L18.9 2Zm-1.1 18h1.7L6.3 4H4.5l13.3 16Z"/></svg></button>
+      <span class="divider"></span>
+      <button id="import" class="button quiet" title="导入皮肤"><i data-lucide="folder-open"></i><span>导入</span></button>
+      <button id="export" class="button quiet" title="导出皮肤"><i data-lucide="download"></i><span>导出</span></button>
+      <span class="divider"></span>
+      <button id="restore" class="button secondary" disabled><i data-lucide="rotate-ccw"></i><span>还原官方</span></button>
+      <button id="apply" class="button primary" disabled><i data-lucide="check"></i><span>应用皮肤</span></button>
+    </div>
+  </header>
+  <div class="documentbar">
+    <div class="document-name"><i data-lucide="palette"></i><input id="theme-name" aria-label="皮肤名称" maxlength="80" spellcheck="false" value="青竹"><span id="save-state" class="save-state">正在加载</span></div>
+    <div class="history-actions"><button id="undo" class="icon-button" title="撤销" aria-label="撤销" disabled><i data-lucide="undo-2"></i></button><button id="redo" class="icon-button" title="重做" aria-label="重做" disabled><i data-lucide="redo-2"></i></button></div>
+  </div>
+  <main class="studio">
+    <aside class="presets-panel" aria-label="皮肤预设">
+      <div class="panel-heading"><h2>预设</h2><span>6</span></div>
+      <div id="presets" class="preset-list"></div>
+      <div class="sidebar-bottom"><i data-lucide="hard-drive"></i><span>本地皮肤文件</span></div>
+    </aside>
+    <section class="workspace" aria-label="候选框预览与试打">
+      <div class="workspace-toolbar">
+        <div class="segmented" aria-label="预览模式"><button id="mode-native" class="active" aria-pressed="true">原生效果</button><button id="mode-image" aria-pressed="false">图片构图</button></div>
+        <div class="canvas-options"><span id="mode-status">配色与圆角</span><button id="canvas-light" class="canvas-swatch light active" aria-label="浅色画布" title="浅色画布" aria-pressed="true"></button><button id="canvas-dark" class="canvas-swatch dark" aria-label="深色画布" title="深色画布" aria-pressed="false"></button></div>
+      </div>
+      <div id="preview-region" class="preview-region">
+        <div class="preview-heading"><span>候选框</span><span id="preview-scope" class="scope native">原生配色</span></div>
+        <div id="candidate" class="candidate" tabindex="0" role="img" aria-label="候选框配色示例">
+          <canvas id="background-canvas" aria-hidden="true"></canvas>
+          <div class="candidate-content"><div class="syllable">ni hao</div><div class="candidate-row"><span class="candidate-item selected"><span class="index">1</span>你好</span><span class="candidate-item"><span class="index">2</span>拟好</span><span class="candidate-item"><span class="index">3</span>你号</span><span class="candidate-item"><span class="index">4</span>霓虹</span><i data-lucide="chevron-down" class="candidate-chevron"></i></div></div>
+        </div>
+        <div id="image-toolbar" class="image-toolbar" hidden><i data-lucide="move"></i><input id="canvas-zoom" type="range" min="100" max="400" step="1" aria-label="图片缩放"><output id="canvas-zoom-value">100%</output><button id="canvas-reset" class="icon-button" title="重置图片构图" aria-label="重置图片构图"><i data-lucide="scan"></i></button></div>
+        <div id="empty-image" class="empty-image" hidden><button id="empty-image-add" class="button secondary"><i data-lucide="image-plus"></i>添加图片</button></div>
+        <div class="preview-footer"><span id="canvas-caption">候选框配色示例</span><span>720 × 112</span></div>
+        <div id="drop-target" class="drop-target" hidden><i data-lucide="image-plus"></i><span>添加背景图片</span></div>
+      </div>
+      <div class="typing-panel"><div class="typing-heading"><h2>试打</h2><button id="clear-typing" class="icon-button" title="清空试打" aria-label="清空试打"><i data-lucide="eraser"></i></button></div><textarea id="typing" aria-label="试打输入" spellcheck="false" placeholder=""></textarea><div class="typing-status"><span class="status-dot"></span><span id="typing-status">微信输入法 2.1.4.6</span><span id="native-state" class="native-state">官方配色</span></div></div>
+    </section>
+    <aside class="inspector" aria-label="皮肤属性">
+      <div class="inspector-tabs" role="tablist" aria-label="属性"><button id="tab-colors" class="active" role="tab" aria-selected="true" aria-controls="colors-panel">配色</button><button id="tab-image" role="tab" aria-selected="false" aria-controls="image-panel">图片</button><button id="tab-pet" role="tab" aria-selected="false" aria-controls="pet-panel">桌宠</button></div>
+      <div class="inspector-scroll">
+        <fieldset id="properties">
+          <section id="pet-panel" role="tabpanel" aria-labelledby="tab-pet" hidden>
+            <div class="property-section"><div class="section-title"><h2>DeepSeek Chan</h2><label class="pet-switch"><input id="pet-enabled" type="checkbox" aria-label="启用桌宠"><span></span></label></div>
+              <div class="pet-preview"><canvas id="pet-preview" width="160" height="160" aria-label="DeepSeek Chan 动画预览"></canvas><span id="pet-preview-name">待机</span></div>
+              <label class="pet-option"><span>候选框</span><input id="pet-candidate" type="checkbox"></label>
+              <label class="pet-option"><span>工具条</span><input id="pet-toolbar" type="checkbox"></label>
+              <label class="pet-option"><span>播放动画</span><input id="pet-animate" type="checkbox"></label>
+              <label class="pet-option"><span>登录时启动桌宠</span><input id="pet-startup" type="checkbox"></label>
+            </div>
+            <div class="property-section"><div class="section-title"><label for="pet-size">角色大小</label><div class="number-field"><input id="pet-size-number" type="number" min="48" max="160" step="1" aria-label="桌宠大小像素"><span>px</span></div></div><input id="pet-size" type="range" min="48" max="160" step="1" aria-label="桌宠大小"></div>
+            <div class="property-section"><div class="section-title"><h2>动作预览</h2><select id="pet-motion" aria-label="桌宠动作"><option value="idle">待机</option><option value="typing">输入</option><option value="navigating">选词与翻页</option><option value="committed">确认上屏</option><option value="cancelled">取消输入</option><option value="mode-chinese">中文举牌</option><option value="mode-english">English 举牌</option><option value="mode-half">半角举牌</option><option value="mode-full">全角举牌</option><option value="punctuation-chinese">中文标点</option><option value="punctuation-english">English 标点</option><option value="punctuation">标点切换</option><option value="rice">吃饭</option><option value="tea">喝奶茶</option><option value="stretch">伸懒腰</option><option value="humming">哼歌</option><option value="bubbles">吐泡泡</option><option value="cube">玩魔方</option><option value="thinking">思考</option><option value="watch">看看时间</option><option value="tapping">敲敲桌面</option><option value="yawn">打哈欠</option><option value="sleepy">睡眼惺忪</option><option value="mode">转身</option><option value="sleeping">休息</option></select></div>
+              <div class="pet-live-state"><span class="status-dot"></span><span id="pet-runtime-state" role="status">等待输入</span></div>
+            </div>
+          </section>
+          <section id="colors-panel" role="tabpanel" aria-labelledby="tab-colors">
+            <div class="property-section"><div class="section-title"><h2>候选框配色</h2><span class="scope native">原生</span></div><div id="color-fields" class="color-fields"></div></div>
+            <div class="property-section"><div class="section-title"><label for="radius">外部圆角</label><div class="number-field"><input id="radius-number" type="number" min="0" max="40" step="1" aria-label="圆角像素"><span>px</span></div></div><input id="radius" type="range" min="0" max="40" step="1" aria-label="外部圆角"><div class="range-ends"><span>直角</span><span>圆角</span></div></div>
+            <div class="property-section coverage"><h2>应用范围</h2><div><i data-lucide="check"></i><span>候选框配色、圆角、图片、透明度</span><span class="scope native">已接入</span></div><div><i data-lucide="check"></i><span>输入法工具条背景与边框</span><span class="scope native">已接入</span></div></div>
+          </section>
+          <section id="image-panel" role="tabpanel" aria-labelledby="tab-image" hidden>
+            <div class="property-section"><div class="section-title"><h2>背景图片</h2><span class="scope native">原生候选框</span></div><div id="image-asset" class="image-asset" hidden><canvas id="image-thumb" width="112" height="80"></canvas><div><span id="image-name"></span><span id="image-dimensions"></span></div><button id="image-remove" class="icon-button" title="移除图片" aria-label="移除图片"><i data-lucide="trash-2"></i></button></div><button id="image-add" class="button image-add"><i data-lucide="image-plus"></i><span>选择图片</span></button></div>
+            <div class="property-section image-controls"><div class="section-title"><label for="zoom">缩放</label><div class="number-field"><input id="zoom-number" type="number" min="100" max="400" step="1" aria-label="图片缩放百分比"><span>%</span></div></div><input id="zoom" type="range" min="100" max="400" step="1" aria-label="背景图片缩放"><div class="position-fields"><label>水平位置<div class="number-field"><input id="position-x" type="number" min="0" max="100" step="1" aria-label="图片水平位置"><span>%</span></div></label><label>垂直位置<div class="number-field"><input id="position-y" type="number" min="0" max="100" step="1" aria-label="图片垂直位置"><span>%</span></div></label></div><button id="image-reset" class="button quiet reset"><i data-lucide="scan"></i>重置构图</button></div>
+            <div class="property-section"><div class="section-title"><label for="tint">颜色蒙层</label><output id="tint-value">32%</output></div><input id="tint" type="range" min="0" max="100" step="1" aria-label="图片颜色蒙层"><div class="section-title opacity-title"><label for="opacity">背景不透明度</label><output id="opacity-value">96%</output></div><input id="opacity" type="range" min="30" max="100" step="1" aria-label="背景不透明度"></div>
+            <div class="property-section image-scope"><i data-lucide="check-circle-2"></i><span>图片、透明度、颜色蒙层和构图会写入原生候选框。应用后需重启输入法渲染进程。</span></div>
+          </section>
+        </fieldset>
+      </div>
+      <div class="inspector-footer"><i data-lucide="shield-check"></i><span>原始文件已校验 · 支持还原</span></div>
+    </aside>
+  </main>
+  <footer class="statusbar"><span id="status-message" role="status" aria-live="polite">正在连接本地编辑器</span><span id="connection">本地 · 离线</span></footer>
+  <input id="image-file" type="file" accept="image/png,image/jpeg,image/bmp,image/gif" hidden>
+  <input id="import-file" type="file" accept=".json,.wtskin.json" hidden>
+</body>
+</html>

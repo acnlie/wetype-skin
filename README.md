@@ -1,5 +1,7 @@
 # WeType Skin Studio
 
+[简体中文](README.md) | [English](README.en.md)
+
 WeType Skin Studio 是一个给微信输入法换皮肤的社区工具。
 
 Windows 版可以把皮肤应用到微信输入法的原生候选框和工具条，并运行独立的 DeepSeek Chan 桌宠。macOS 版目前主要用于编辑、预览和测试输入法副本，官方微信输入法不会被修改。
